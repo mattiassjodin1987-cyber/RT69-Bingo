@@ -1,0 +1,192 @@
+
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RT69-Bingo Realtid</title>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      onSnapshot,
+      serverTimestamp,
+      deleteDoc,
+      doc,
+      query,
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAPROStzej4WQDlPNzvzzFpllBuR8-EctQ",
+      authDomain: "rt69-bingo.firebaseapp.com",
+      projectId: "rt69-bingo",
+      storageBucket: "rt69-bingo.firebasestorage.app",
+      messagingSenderId: "161894069210",
+      appId: "1:161894069210:web:a81eb316a67d1c6d4bc6e3"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const winnerList = document.getElementById("winnerList");
+    const playersList = document.getElementById("playersList");
+    const isAdmin = window.location.search.includes("admin=true");
+
+    function getPlayerName() {
+      const input = document.getElementById("playerName");
+      return input?.value?.trim() || "Anonym spelare";
+    }
+
+    async function syncPlayerStatus() {
+      const marked = document.querySelectorAll(".cell.marked").length;
+      const name = getPlayerName();
+      await addDoc(collection(db, "players"), {
+        name,
+        marked,
+        timestamp: serverTimestamp()
+      });
+    }
+
+    function updateWinnerList() {
+      const q = query(collection(db, "winners"), orderBy("timestamp", "desc"));
+      onSnapshot(q, snapshot => {
+        winnerList.innerHTML = "";
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          const li = document.createElement("li");
+          li.innerHTML = `🏆 ${data.name} <small>(${new Date(data.timestamp?.seconds * 1000).toLocaleTimeString()})</small>`;
+          if (isAdmin) {
+            const btn = document.createElement("button");
+            btn.textContent = "❌";
+            btn.onclick = () => deleteDoc(doc(db, "winners", docSnap.id));
+            li.appendChild(btn);
+          }
+          winnerList.appendChild(li);
+        });
+      });
+    }
+
+    function updatePlayers() {
+      const q = query(collection(db, "players"), orderBy("timestamp", "desc"));
+      onSnapshot(q, snapshot => {
+        playersList.innerHTML = "";
+        const names = new Set();
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          if (!names.has(data.name)) {
+            const li = document.createElement("li");
+            li.textContent = `👤 ${data.name} (${data.marked} markerade)`;
+            playersList.appendChild(li);
+            names.add(data.name);
+          }
+        });
+      });
+    }
+
+    window.registerWinner = async function(name) {
+      await addDoc(collection(db, "winners"), {
+        name,
+        timestamp: serverTimestamp()
+      });
+    };
+
+    window.syncPlayerStatus = syncPlayerStatus;
+    updateWinnerList();
+    updatePlayers();
+  </script>
+  <style>
+    body { font-family: sans-serif; text-align: center; background: #002d72; color: white; }
+    .bingo { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; max-width: 600px; margin: 20px auto; }
+    .cell { background: white; color: #002d72; padding: 10px; border-radius: 8px; cursor: pointer; }
+    .cell.marked { background: #ffc72c; text-decoration: line-through; }
+    .cell.free { background: #eee; cursor: default; }
+    button { margin: 5px; padding: 10px 20px; background: #ffc72c; border: none; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #e6b800; }
+    .admin-note { font-size: 0.8em; color: #ffc72c; margin-top: 5px; }
+    ul { list-style: none; padding: 0; }
+    li button { margin-left: 10px; }
+    .container { max-width: 800px; margin: auto; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎉 RT69 Bingo – Realtid</h1>
+    <input id="playerName" placeholder="Ange ditt namn" oninput="syncPlayerStatus()"/>
+    <div class="bingo" id="bingo"></div>
+    <button onclick="generateBoard()">Ny bricka</button>
+    <button onclick="checkBingo()">BINGO!</button>
+
+    <h2>👑 Bingomästarens protokoll</h2>
+    <ul id="winnerList"></ul>
+
+    <h2>🧑‍🤝‍🧑 Aktiva spelare</h2>
+    <ul id="playersList"></ul>
+
+    <h2>📲 Dela med QR-kod</h2>
+    <div id="qrcode"></div>
+  </div>
+
+  <script>
+    const allCells = [...Array(25).keys()].map(i => `Händelse ${i+1}`);
+    function generateBoard() {
+      const board = document.getElementById("bingo");
+      board.innerHTML = "";
+      const cells = [...allCells].sort(() => 0.5 - Math.random()).slice(0, 24);
+      let idx = 0;
+      for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 5; c++) {
+          const div = document.createElement("div");
+          div.className = "cell";
+          if (r === 2 && c === 2) {
+            div.textContent = "GRATIS";
+            div.classList.add("marked", "free");
+          } else {
+            div.textContent = cells[idx++];
+            div.onclick = () => {
+              div.classList.toggle("marked");
+              syncPlayerStatus();
+            };
+          }
+          board.appendChild(div);
+        }
+      }
+    }
+
+    function checkBingo() {
+      const cells = document.querySelectorAll(".cell");
+      const grid = Array.from({ length: 5 }, (_, r) =>
+        Array.from({ length: 5 }, (_, c) => cells[r * 5 + c].classList.contains("marked"))
+      );
+      const isBingo = () =>
+        grid.some(row => row.every(Boolean)) ||
+        grid[0].map((_, i) => grid.every(row => row[i])).some(Boolean) ||
+        grid.every((row, i) => row[i]) ||
+        grid.every((row, i) => row[4 - i]);
+
+      const name = document.getElementById("playerName").value || "Anonym spelare";
+      if (isBingo()) {
+        document.getElementById("bingo-sound").play();
+        confetti();
+        alert(`🎉 ${name} har ropat BINGO! Vänligen visa för bingomästaren.`);
+        window.registerWinner(name);
+      } else {
+        alert("❌ Ingen giltig rad ännu!");
+      }
+    }
+
+    window.onload = () => {
+      generateBoard();
+      const qr = document.getElementById("qrcode");
+      QRCode.toCanvas(qr, window.location.href, err => {
+        if (err) console.error(err);
+      });
+    };
+  </script>
+  <audio id="bingo-sound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg" preload="auto"></audio>
+</body>
+</html>
