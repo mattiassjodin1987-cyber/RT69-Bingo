@@ -1,24 +1,15 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>RT69 Bingo</title>
-  <script>
-    if (window.location.search.includes("admin=true")) {
-      const pw = prompt("🔐 Ange adminlösenord:");
-      if (pw !== "rt69") {
-        alert("Fel lösenord – du skickas tillbaka.");
-        window.location.href = window.location.origin + window.location.pathname;
-      }
-    }
-  </script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
     import {
-      getFirestore, collection, addDoc, onSnapshot,
-      serverTimestamp, deleteDoc, doc, query, orderBy
+      getFirestore, collection, setDoc, doc, onSnapshot,
+      serverTimestamp, deleteDoc, query, orderBy
     } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -34,14 +25,14 @@
     const db = getFirestore(app);
     const isAdmin = window.location.search.includes("admin=true");
 
-    function getName() {
-      return document.getElementById("playerName").value || "Anonym spelare";
-    }
+    const getName = () => document.getElementById("playerName").value.trim() || "";
 
     async function updatePlayer() {
+      const name = getName();
+      if (!name) return;
       const marked = document.querySelectorAll('.cell.marked').length;
-      await addDoc(collection(db, "players"), {
-        name: getName(),
+      await setDoc(doc(db, "players", name), {
+        name,
         marked,
         timestamp: serverTimestamp()
       });
@@ -50,15 +41,15 @@
     function watchPlayers() {
       const list = document.getElementById("players");
       onSnapshot(query(collection(db, "players"), orderBy("timestamp", "desc")), snap => {
-        const names = new Set();
+        const shown = new Set();
         list.innerHTML = "";
         snap.forEach(doc => {
           const d = doc.data();
-          if (!names.has(d.name)) {
+          if (!shown.has(d.name)) {
             const li = document.createElement("li");
             li.textContent = `👤 ${d.name} (${d.marked} kryss)`;
             list.appendChild(li);
-            names.add(d.name);
+            shown.add(d.name);
           }
         });
       });
@@ -84,22 +75,15 @@
     }
 
     async function declareWinner() {
-      await addDoc(collection(db, "winners"), {
-        name: getName(),
+      const name = getName();
+      if (!name) return;
+      await setDoc(doc(db, "winners", name + "-" + Date.now()), {
+        name,
         timestamp: serverTimestamp()
       });
     }
 
-    window.onload = () => {
-      buildBoard();
-      watchPlayers();
-      watchWinners();
-    }
-
-    window.buildBoard = () => {
-      const board = document.getElementById("board");
-      board.innerHTML = "";
-      const cells = [
+    const bingoItems = [
   "Någon säger 'det är väl egentligen sekreterarens jobb?'",
   "Någon nämner en förlorad klubbmedlem",
   "Ordföranden säger 'det där tar vi sen'",
@@ -119,8 +103,36 @@
   "Någon säger 'vi behöver tänka mer långsiktigt'",
   "Någon pratar om att klubben ska införskaffa en buss",
   "Någon frågar 'har vi budget för det?'",
-  "Ett internt skämt drar ut på tiden"
-].sort(() => 0.5 - Math.random()).slice(0, 24);
+  "Ett internt skämt drar ut på tiden",
+  "Internskämt drar ut på tiden",
+  "Dryck hälls upp i fel glas",
+  "Någon nämner tidigare ordförande",
+  "Mobilen ringer mitt i mötet",
+  "Klubbnålen tappas bort",
+  "Föreslås att boka padel",
+  "Citat från förra festen nämns",
+  "Någon läser protokoll fel",
+  "RT69 nämns med stolthet",
+  "Skratt utan att förklara varför",
+  "Någon föreslår bastuaktivitet",
+  "Mötet spårar ur till sidospår",
+  "Någon föreslår ett nytt lotteri",
+  "Planer på klubbresa diskuteras",
+  "Alla glömmer vilken punkt man är på",
+  "Mötesledaren tappar kontrollen",
+  "Hatten bärs av fel person",
+  "PowerPoint kraschar",
+  "Diskussion om logotypen uppstår",
+  "Engelsk titel används i onödan"
+];
+
+    function buildBoard() {
+      const name = getName();
+      if (!name) return alert("❗ Skriv ditt namn först!");
+
+      const board = document.getElementById("board");
+      board.innerHTML = "";
+      const shuffled = bingoItems.sort(() => 0.5 - Math.random()).slice(0, 24);
       let i = 0;
       for (let r = 0; r < 5; r++) {
         for (let c = 0; c < 5; c++) {
@@ -130,7 +142,7 @@
             div.textContent = "GRATIS";
             div.classList.add("marked", "free");
           } else {
-            div.textContent = cells[i++];
+            div.textContent = shuffled[i++];
             div.onclick = () => {
               div.classList.toggle("marked");
               updatePlayer();
@@ -139,9 +151,13 @@
           board.appendChild(div);
         }
       }
+      updatePlayer();
     }
 
-    window.checkBingo = () => {
+    function checkBingo() {
+      const name = getName();
+      if (!name) return alert("❗ Skriv ditt namn först!");
+
       const cells = document.querySelectorAll(".cell");
       const grid = Array.from({ length: 5 }, (_, r) =>
         Array.from({ length: 5 }, (_, c) => cells[r * 5 + c].classList.contains("marked"))
@@ -159,9 +175,14 @@
         alert("❌ Ingen giltig rad ännu!");
       }
     }
+
+    window.onload = () => {
+      watchPlayers();
+      watchWinners();
+    }
   </script>
   <style>
-    body { font-family: sans-serif; background:#002d72; color:white; text-align:center; }
+    body { font-family:sans-serif; background:#002d72; color:white; text-align:center; }
     .board { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; max-width:600px; margin:20px auto; }
     .cell { background:white; color:#002d72; padding:10px; border-radius:6px; cursor:pointer; }
     .cell.marked { background:#ffc72c; text-decoration: line-through; }
