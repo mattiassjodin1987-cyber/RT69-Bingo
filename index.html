@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -25,7 +26,7 @@
     const db = getFirestore(app);
     const isAdmin = window.location.search.includes("admin=true");
 
-    const getName = () => document.getElementById("playerName").value.trim() || "";
+    const getName = () => document.getElementById("playerName").value.trim();
 
     async function updatePlayer() {
       const name = getName();
@@ -120,10 +121,28 @@
   "Planer på klubbresa diskuteras",
   "Alla glömmer vilken punkt man är på",
   "Mötesledaren tappar kontrollen",
-  "Hatten bärs av fel person",
   "PowerPoint kraschar",
   "Diskussion om logotypen uppstår",
-  "Engelsk titel används i onödan"
+  "Engelsk titel används i onödan",
+  "Någon nämner LC",
+  "Någon är osäker på om de ska delta på ett RT-event utanför klubben",
+  "Vegas nämns",
+  "En post member deltar på mötet",
+  "En gäst deltar på mötet",
+  "Någon lägger till en övrig fråga eller påstående löpande",
+  "Någon tar en ogiltig KP",
+  "Klubbis missköter sig",
+  "Broder kommer inte till tals",
+  "Förslag om samverkan med annan klubb dyker upp",
+  "Någon har för gammal RT-tröja på sig",
+  "Mötet glider över till nostalgisnack",
+  "Någon visar bilder från en resa",
+  "Fel bilaga används i diskussion",
+  "Ska vi byta dag för möten? föreslås",
+  "Ingen vet vem som ansvarar för aktiviteten",
+  "Ordförande nämner budget trots att det inte gäller",
+  "Alla börjar snacka samtidigt",
+  "Mötet avslutas utan att det märks"
 ];
 
     function buildBoard() {
@@ -132,7 +151,7 @@
 
       const board = document.getElementById("board");
       board.innerHTML = "";
-      const shuffled = bingoItems.sort(() => 0.5 - Math.random()).slice(0, 24);
+      const shuffled = [...bingoItems].sort(() => 0.5 - Math.random()).slice(0, 24);
       let i = 0;
       for (let r = 0; r < 5; r++) {
         for (let c = 0; c < 5; c++) {
