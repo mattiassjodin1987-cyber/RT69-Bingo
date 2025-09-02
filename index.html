@@ -63,6 +63,20 @@
       width: 120px;
       height: auto;
     }
+    .rules {
+      background: #001a40;
+      color: #ffffff;
+      padding: 20px;
+      margin-top: 40px;
+    }
+    .rules h2 {
+      color: #ffc72c;
+    }
+    .rules ol {
+      text-align: left;
+      max-width: 600px;
+      margin: 0 auto;
+    }
   </style>
 </head>
 <body>
@@ -71,7 +85,20 @@
   </div>
   <h1>📊 RT69-Bingo</h1>
   <div class="bingo" id="bingo"></div>
-  <button onclick="generateBoard()">↻ Ny bricka</button>
+  <button onclick="checkBingo()">BINGO!</button>
+
+  <div class="rules">
+    <h2>📜 Regler för RT69-Bingo</h2>
+    <ol>
+      <li>Markera en ruta varje gång du känner igen en situation.</li>
+      <li>Vid varje markerad ruta: 🥤 <strong>Drick av valfri dryck</strong> – med stil och ansvar.</li>
+      <li>Du får <strong>BINGO</strong> vid en hel rad: vågrätt, lodrätt eller diagonalt.</li>
+      <li>Utropa “BINGO!” med stolthet – belöning utdelas av <strong>bingomästaren</strong>.</li>
+    </ol>
+    <p><em>Spela med skratt, vänskap och värdighet!</em></p>
+  </div>
+
+  <audio id="bingo-sound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg" preload="auto"></audio>
 
   <script>
     const allCeller = [
@@ -90,7 +117,7 @@
       const board = document.getElementById("bingo");
       board.innerHTML = "";
       const shuffled = allCeller.sort(() => 0.5 - Math.random());
-      const selected = shuffled.slice(0, 24); // 24 celler + 1 fri
+      const selected = shuffled.slice(0, 24);
 
       let i = 0;
       for (let row = 0; row < 5; row++) {
@@ -109,6 +136,35 @@
 
           board.appendChild(cell);
         }
+      }
+    }
+
+    function checkBingo() {
+      const cells = document.querySelectorAll(".cell");
+      const grid = Array.from({ length: 5 }, (_, r) =>
+        Array.from({ length: 5 }, (_, c) => cells[r * 5 + c].classList.contains("marked"))
+      );
+
+      const hasBingo = () => {
+        // rader
+        for (let r = 0; r < 5; r++) {
+          if (grid[r].every(cell => cell)) return true;
+        }
+        // kolumner
+        for (let c = 0; c < 5; c++) {
+          if (grid.every(row => row[c])) return true;
+        }
+        // diagonaler
+        if (grid.every((row, i) => row[i])) return true;
+        if (grid.every((row, i) => row[4 - i])) return true;
+        return false;
+      };
+
+      if (hasBingo()) {
+        document.getElementById("bingo-sound").play();
+        alert("🎉 BINGO! Spelet pausas. Vinnaren ska förklara sin rad och få den godkänd av bingomästaren. Priset hägrar!");
+      } else {
+        alert("❌ Tyvärr! Ingen giltig rad hittades. Fortsätt spela – du är nära!");
       }
     }
 
