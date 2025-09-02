@@ -1,0 +1,159 @@
+
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RT69 Bingo</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f0f0f0;
+      text-align: center;
+    }
+    header {
+      background: #002b45;
+      color: white;
+      padding: 1em 0;
+    }
+    h1 {
+      margin: 0;
+    }
+    #nameInput {
+      margin-top: 20px;
+    }
+    input, button {
+      padding: 0.5em 1em;
+      font-size: 1em;
+    }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin: 20px auto;
+      width: 90%;
+      max-width: 500px;
+    }
+    .cell {
+      padding: 20px;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .cell.marked {
+      background: #ffc107;
+      text-decoration: line-through;
+    }
+    footer {
+      margin-top: 2em;
+      padding: 1em;
+      background: #002b45;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>RT69 Bingo</h1>
+  </header>
+
+  <div id="nameInput">
+    <input type="text" id="playerName" placeholder="Skriv ditt namn" />
+    <button onclick="startGame()">🆕 Ny bricka</button>
+  </div>
+
+  <div class="board" id="board"></div>
+
+  <footer>
+    <h2>📜 Regler för RT69 Bingo</h2>
+    <ul>
+      <li>✔️ Kryssa en ruta – drick valfri dryck 🍻</li>
+      <li>✔️ BINGO = hel rad (vågrätt, lodrätt eller diagonalt)</li>
+      <li>✔️ Tryck på BINGO-knappen och ropa ”Bingo!” vid vinst 📣</li>
+      <li>✔️ Spelet pausas och vinnaren förklarar sin rad</li>
+      <li>✔️ Bingomästaren validerar raden och delar ut pris 🏆</li>
+    </ul>
+  </footer>
+
+  <script>
+    const events = [
+      "Ordförande nämner budget trots att det inte gäller",
+      "Mötet avslutas utan att det märks",
+      "Alla börjar snacka samtidigt",
+      "Fel bilaga används i diskussion",
+      "Mötet glider över till nostalgisnack",
+      "Någon har för gammal RT-tröja på sig",
+      "Förslag om samverkan med annan klubb dyker upp",
+      "Någon visar bilder från en resa",
+      "Ingen vet vem som ansvarar för aktiviteten",
+      "Ska vi byta dag för möten? föreslås",
+      "En broder kommer för sent",
+      "Diskussion om Vegas uppstår",
+      "En gäst deltar på mötet",
+      "Post member deltar",
+      "Någon nämner LC",
+      "Kaffet är slut",
+      "Intern skämtförklaring krävs",
+      "Alla glömmer ta protokoll",
+      "Klubbis missköter sig",
+      "Någon tar en ogiltig KP",
+      "Någon lägger till en övrig fråga eller påstående löpande",
+      "Broder kommer inte till tals",
+      "Någon är osäker på om de ska delta på ett RT-event utanför klubben",
+      "Vegas nämns",
+      "Någon glömmer vilken punkt som behandlas",
+      "Bingomästaren får kritik",
+      "En motion väcks spontant",
+      "Ljudproblem med hybridmöte",
+      "En punkt återkommer trots att den beslutats om",
+      "Referens till tidigare RT-resa görs",
+      "Styrelsen nämns utan anledning",
+      "Någon citerar tidigare protokoll felaktigt",
+      "Kritik mot beslut tas upp i fel punkt",
+      "Ett internt skämt leder till diskussion",
+      "RT-symboler diskuteras",
+      "Gammal RT-historia återberättas",
+      "Förslag om att ändra på något som inte går",
+      "Kommentar om bordets inredning",
+      "En RT-låt nynnas spontant",
+      "Fel klubbnummer nämns"
+    ];
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function startGame() {
+      const name = document.getElementById('playerName').value.trim();
+      if (!name) {
+        alert("Skriv in ditt namn först!");
+        return;
+      }
+
+      const board = document.getElementById("board");
+      board.innerHTML = "";
+
+      const shuffled = shuffle([...events]).slice(0, 24);
+      shuffled.splice(12, 0, "⭐ Gratisruta ⭐");
+
+      shuffled.forEach((text, index) => {
+        const div = document.createElement("div");
+        div.className = "cell";
+        div.textContent = text;
+        if (text.includes("Gratisruta")) div.classList.add("marked");
+        div.onclick = () => {
+          div.classList.toggle("marked");
+        };
+        board.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>
