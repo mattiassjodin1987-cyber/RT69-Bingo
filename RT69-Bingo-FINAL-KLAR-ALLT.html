@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RT69 Bingo</title>
+  <script>
+    if (window.location.search.includes("admin=true")) {
+      const pw = prompt("🔐 Ange adminlösenord:");
+      if (pw !== "rt69") {
+        alert("Fel lösenord – du skickas tillbaka.");
+        window.location.href = window.location.origin + window.location.pathname;
+      }
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import {
+      getFirestore, collection, addDoc, onSnapshot,
+      serverTimestamp, deleteDoc, doc, query, orderBy
+    } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAPROStzej4WQDlPNzvzzFpllBuR8-EctQ",
+      authDomain: "rt69-bingo.firebaseapp.com",
+      projectId: "rt69-bingo",
+      storageBucket: "rt69-bingo.firebasestorage.app",
+      messagingSenderId: "161894069210",
+      appId: "1:161894069210:web:a81eb316a67d1c6d4bc6e3"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const isAdmin = window.location.search.includes("admin=true");
+
+    function getName() {
+      return document.getElementById("playerName").value || "Anonym spelare";
+    }
+
+    async function updatePlayer() {
+      const marked = document.querySelectorAll('.cell.marked').length;
+      await addDoc(collection(db, "players"), {
+        name: getName(),
+        marked,
+        timestamp: serverTimestamp()
+      });
+    }
+
+    function watchPlayers() {
+      const list = document.getElementById("players");
+      onSnapshot(query(collection(db, "players"), orderBy("timestamp", "desc")), snap => {
+        const names = new Set();
+        list.innerHTML = "";
+        snap.forEach(doc => {
+          const d = doc.data();
+          if (!names.has(d.name)) {
+            const li = document.createElement("li");
+            li.textContent = `👤 ${d.name} (${d.marked} kryss)`;
+            list.appendChild(li);
+            names.add(d.name);
+          }
+        });
+      });
+    }
+
+    function watchWinners() {
+      const list = document.getElementById("winners");
+      onSnapshot(query(collection(db, "winners"), orderBy("timestamp", "desc")), snap => {
+        list.innerHTML = "";
+        snap.forEach(docSnap => {
+          const d = docSnap.data();
+          const li = document.createElement("li");
+          li.textContent = `🏆 ${d.name} • ${new Date(d.timestamp?.seconds * 1000).toLocaleTimeString()}`;
+          if (isAdmin) {
+            const btn = document.createElement("button");
+            btn.textContent = "❌";
+            btn.onclick = () => deleteDoc(doc(db, "winners", docSnap.id));
+            li.append(" ", btn);
+          }
+          list.appendChild(li);
+        });
+      });
+    }
+
+    async function declareWinner() {
+      await addDoc(collection(db, "winners"), {
+        name: getName(),
+        timestamp: serverTimestamp()
+      });
+    }
+
+    window.onload = () => {
+      buildBoard();
+      watchPlayers();
+      watchWinners();
+    }
+
+    window.buildBoard = () => {
+      const board = document.getElementById("board");
+      board.innerHTML = "";
+      const cells = [
+  "Någon säger 'det är väl egentligen sekreterarens jobb?'",
+  "Någon nämner en förlorad klubbmedlem",
+  "Ordföranden säger 'det där tar vi sen'",
+  "En spontant planerad aktivitet föreslås",
+  "Någon har glömt sitt ansvarsområde",
+  "Ett dåligt förslag får starkt stöd",
+  "Det refereras till förra årets kaos",
+  "SKÅL!",
+  "‘Vi borde ha haft med Namn här’",
+  "Någon skämtar om att vara bakis",
+  "Någon blir ofrivillig projektledare",
+  "En allmän suck hörs",
+  "En punkt går över tiden",
+  "Någon glömmer vad vi pratar om",
+  "En regel diskuteras men ingen kan den",
+  "Någon börjar googla under mötet",
+  "Någon säger 'vi behöver tänka mer långsiktigt'",
+  "Någon pratar om att klubben ska införskaffa en buss",
+  "Någon frågar 'har vi budget för det?'",
+  "Ett internt skämt drar ut på tiden"
+].sort(() => 0.5 - Math.random()).slice(0, 24);
+      let i = 0;
+      for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 5; c++) {
+          const div = document.createElement("div");
+          div.className = "cell";
+          if (r === 2 && c === 2) {
+            div.textContent = "GRATIS";
+            div.classList.add("marked", "free");
+          } else {
+            div.textContent = cells[i++];
+            div.onclick = () => {
+              div.classList.toggle("marked");
+              updatePlayer();
+            };
+          }
+          board.appendChild(div);
+        }
+      }
+    }
+
+    window.checkBingo = () => {
+      const cells = document.querySelectorAll(".cell");
+      const grid = Array.from({ length: 5 }, (_, r) =>
+        Array.from({ length: 5 }, (_, c) => cells[r * 5 + c].classList.contains("marked"))
+      );
+      const bingo = grid.some(row => row.every(Boolean)) ||
+        grid[0].map((_, i) => grid.every(row => row[i])).some(Boolean) ||
+        grid.every((row, i) => row[i]) ||
+        grid.every((row, i) => row[4 - i]);
+      if (bingo) {
+        confetti();
+        document.getElementById("bingoSound").play();
+        alert("🎉 BINGO! Spelet pausas. Vinnaren ska visa sin rad och få den godkänd av bingomästaren.");
+        declareWinner();
+      } else {
+        alert("❌ Ingen giltig rad ännu!");
+      }
+    }
+  </script>
+  <style>
+    body { font-family: sans-serif; background:#002d72; color:white; text-align:center; }
+    .board { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; max-width:600px; margin:20px auto; }
+    .cell { background:white; color:#002d72; padding:10px; border-radius:6px; cursor:pointer; }
+    .cell.marked { background:#ffc72c; text-decoration: line-through; }
+    .cell.free { background:#ccc; cursor:default; }
+    input { padding:10px; margin:10px; width:250px; }
+    button { padding:10px 20px; margin:10px; border:none; background:#ffc72c; cursor:pointer; }
+    .section { margin:30px auto; max-width:800px; background:#001b3d; padding:15px; border-radius:10px; }
+    h2 { color:#ffc72c; }
+    ul { list-style:none; padding:0; }
+    li button { margin-left:10px; }
+  </style>
+</head>
+<body>
+  <h1>🎯 RT69 Bingo</h1>
+  <input id="playerName" placeholder="Ditt namn" oninput="updatePlayer()" />
+  <div class="board" id="board"></div>
+  <button onclick="buildBoard()">🆕 Ny bricka</button>
+  <button onclick="checkBingo()">✅ BINGO!</button>
+
+  <div class="section">
+    <h2>👑 Vinnare</h2>
+    <ul id="winners"></ul>
+  </div>
+
+  <div class="section">
+    <h2>👥 Aktiva spelare</h2>
+    <ul id="players"></ul>
+  </div>
+
+  <div class="section">
+    <h2>📜 Regler för RT69 Bingo</h2>
+    <ul>
+      <li>✔️ Kryssa en ruta – drick valfri dryck 🍻</li>
+      <li>✔️ BINGO = hel rad (vågrätt, lodrätt eller diagonalt)</li>
+      <li>✔️ Tryck på BINGO-knappen</li>
+      <li>✔️ Spelet pausas och vinnaren förklarar sin rad</li>
+      <li>✔️ Bingomästaren validerar raden och delar ut pris 🏆</li>
+    </ul>
+  </div>
+
+  <audio id="bingoSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg" preload="auto"></audio>
+</body>
+</html>
