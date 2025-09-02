@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RT69 Styrelsebingo</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #f8f8f8;
+    }
+    h1 {
+      margin-top: 30px;
+    }
+    .bingo {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      max-width: 500px;
+      margin: 20px auto;
+    }
+    .cell {
+      background: white;
+      border: 2px solid #ccc;
+      padding: 20px;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: background 0.3s;
+    }
+    .cell.marked {
+      background: #90ee90;
+      text-decoration: line-through;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>📊 RT69 Styrelsebingo</h1>
+  <div class="bingo" id="bingo"></div>
+  <button onclick="generateBoard()">↻ Ny bricka</button>
+
+  <script>
+    const brickor = [
+      [
+        "Någon säger 'vi gjorde ju så förra året också'", "Ett dåligt förslag får starkt stöd", "Någon blir ofrivillig projektledare",
+        "Någon börjar googla under mötet", "Det refereras till förra årets kaos", "En allmän suck hörs",
+        "En spontan aktivitet föreslås", "Någon skämtar om att vara bakis", "Ett internt skämt drar ut på tiden"
+      ],
+      [
+        "Någon nämner en förlorad klubbmedlem", "Det blir tyst i mer än 10 sekunder", "Någon glömmer vad vi pratar om",
+        "'Vi borde ha haft med Namn här'", "Någon frågar 'har vi budget för det?'", "Någon missförstår agendan",
+        "En regel diskuteras men ingen kan den", "SKÅL!", "Någon har glömt sitt ansvarsområde"
+      ]
+    ];
+
+    function generateBoard() {
+      const board = document.getElementById("bingo");
+      board.innerHTML = "";
+      const bricka = brickor[Math.floor(Math.random() * brickor.length)];
+
+      bricka.forEach(text => {
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        cell.textContent = text;
+        cell.onclick = () => cell.classList.toggle("marked");
+        board.appendChild(cell);
+      });
+    }
+
+    generateBoard();
+  </script>
+</body>
+</html>
