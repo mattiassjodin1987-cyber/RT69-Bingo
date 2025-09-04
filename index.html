@@ -44,7 +44,7 @@
       font-weight: bold;
     }
     button {
-      margin-top: 20px;
+      margin: 10px;
       padding: 10px 20px;
       font-size: 16px;
       background-color: #ffc72c;
@@ -55,13 +55,6 @@
     }
     button:hover {
       background-color: #e6b800;
-    }
-    .logo {
-      margin-top: 20px;
-    }
-    .logo img {
-      width: 120px;
-      height: auto;
     }
     .rules {
       background: #001a40;
@@ -77,12 +70,27 @@
       max-width: 600px;
       margin: 0 auto;
     }
+
+    @media (max-width: 600px) {
+      .cell {
+        font-size: 12px;
+        padding: 10px;
+      }
+      button {
+        width: 80%;
+        font-size: 18px;
+      }
+      .rules ol {
+        padding-left: 15px;
+      }
+    }
   </style>
 </head>
 <body>
-    <h1>📊 RT69-Bingo</h1>
+  <h1>📊 RT69-Bingo</h1>
   <div class="bingo" id="bingo"></div>
   <button onclick="checkBingo()">BINGO!</button>
+  <button onclick="generateBoard()">🔄 Ny bricka</button>
 
   <div class="rules">
     <h2>📜 Regler för RT69-Bingo</h2>
@@ -98,72 +106,7 @@
   <audio id="bingo-sound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg" preload="auto"></audio>
 
   <script>
-    const allCeller = [
-      
-  "Någon säger 'vi gjorde ju så förra året också'",
-  "Ett dåligt förslag får starkt stöd",
-  "Någon blir ofrivillig projektledare",
-  "Någon börjar googla under mötet",
-  "Det refereras till förra årets kaos",
-  "En allmän suck hörs",
-  "En spontan aktivitet föreslås",
-  "Någon skämtar om att vara bakis",
-  "Ett internt skämt drar ut på tiden",
-  "Någon nämner en förlorad klubbmedlem",
-  "Det blir tyst i mer än 10 sekunder",
-  "Någon glömmer vad vi pratar om",
-  "Förslag om samverkan med annan klubb dyker upp",
-  "Någon frågar 'har vi budget för det?'",
-  "Någon missförstår agendan",
-  "En regel diskuteras men ingen kan den",
-  "SKÅL!",
-  "Någon har glömt sitt ansvarsområde",
-  "Nostalgisnack",
-  "Diskussion om möte på helgdag",
-  "Någon säger att detta borde vi ta i WhatsApp",
-  "Dokument delas men ingen har läst",
-  "Någon låtsas minnas föregående beslut",
-  "Fel fil öppnas på mötet",
-  "Tyst konsensus uppnås utan beslut",
-  "Någon nämner LC",
-  "Oklarheter vilka som åker på ett externt event",
-  "Vegas nämns",
-  "En post member deltar på mötet",
-  "En gäst deltar på mötet",
-  "Någon lägger till en övrig fråga",
-  "Någon lägger till ett övrigt påstående",
-  "Någon tar en ogiltig KP",
-  "Klubbis missköter sig",
-  "Broder kommer inte till tals",
-  "Någon är osäker på om de ska delta på ett RT-event utanför klubben",
-  "En broder använder en ovanligt formell röst",
-  "Någon vill 'ta det vidare i styrelsen'",
-  "Någon uttrycker sig kryptiskt eller förkortat",
-  "En broder är tyst men skriver mycket i chatten",
-  "Någon säger 'jag vet inte om det är en bra idé men...'",
-  "Ett internskämt får förklaras för ny medlem",
-  "Ordföranden missar att fördela ordet",
-  "Någon föreslår en lokal ölprovning",
-  "En broder pratar om RT i ett annat land",
-  "Någon säger 'kan vi fatta beslut på detta nu?'",
-  "En broder vinner en intern tävling",
-  "Teknikstrul sker (t.ex. Teams eller ljudproblem)",
-  "Någon är sen till mötet",
-  "Någon glömmer stänga av mikrofonen",
-  "En tidigare motion kommer upp igen",
-  "'Det står nog i protokollet' sägs",
-  "Någon lämnar mötet utan förklaring",
-  "En medlem påminns om medlemsavgift",
-  "En ny idé föreslås utan att någon antecknar",
-  "Det blir tyst när ordförande ställer en fråga",
-  "Någon visar ett meme i chatten",
-  "En broder refererar till stadgarna",
-  "Någon föreslår en samarbetsaktivitet med LC",
-  "Någon ifrågasätter varför något inte blev gjort",
-  "En tidigare styrelse nämns nostalgiskt",
-  "Någon avslutar med 'vi ses i baren'",
-  "Någon säger 'vi borde skriva en policy'"
-    ];
+    const allCeller = [...Array(65).keys()].map(i => "Händelse " + (i + 1)); // Placeholder-rutor
 
     function generateBoard() {
       const board = document.getElementById("bingo");
