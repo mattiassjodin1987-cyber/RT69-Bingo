@@ -1,8 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>RT69-Bingo</title>
   <style>
     body {
@@ -10,9 +11,11 @@
       text-align: center;
       background: #002d72;
       color: #ffffff;
+      margin: 0;
+      padding: 0 10px;
     }
     h1 {
-      margin-top: 30px;
+      margin-top: 20px;
       color: #ffc72c;
     }
     .bingo {
@@ -60,7 +63,7 @@
       background: #001a40;
       color: #ffffff;
       padding: 20px;
-      margin-top: 40px;
+      margin-top: 30px;
     }
     .rules h2 {
       color: #ffc72c;
@@ -69,28 +72,15 @@
       text-align: left;
       max-width: 600px;
       margin: 0 auto;
-    }
-
-    @media (max-width: 600px) {
-      .cell {
-        font-size: 12px;
-        padding: 10px;
-      }
-      button {
-        width: 80%;
-        font-size: 18px;
-      }
-      .rules ol {
-        padding-left: 15px;
-      }
+      padding-left: 20px;
     }
   </style>
 </head>
 <body>
   <h1>📊 RT69-Bingo</h1>
   <div class="bingo" id="bingo"></div>
+  <button onclick="generateBoard()">Ny bricka</button>
   <button onclick="checkBingo()">BINGO!</button>
-  <button onclick="generateBoard()">🔄 Ny bricka</button>
 
   <div class="rules">
     <h2>📜 Regler för RT69-Bingo</h2>
@@ -99,6 +89,7 @@
       <li>Vid varje markerad ruta: 🥤 <strong>Drick av valfri dryck</strong> – med stil och ansvar.</li>
       <li>Du får <strong>BINGO</strong> vid en hel rad: vågrätt, lodrätt eller diagonalt.</li>
       <li>Utropa “BINGO!” med stolthet – belöning utdelas av <strong>bingomästaren</strong>.</li>
+      <li><strong>Bingomästaren styr spelet och har sista ordet 🧠</strong></li>
     </ol>
     <p><em>Spela med skratt, vänskap och värdighet!</em></p>
   </div>
@@ -106,15 +97,80 @@
   <audio id="bingo-sound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg" preload="auto"></audio>
 
   <script>
-    const allCeller = [...Array(65).keys()].map(i => "Händelse " + (i + 1)); // Placeholder-rutor
+    const allCeller = [
+
+    "Någon säger 'vi gjorde ju så förra året också'",
+"Ett dåligt förslag får starkt stöd",
+"Någon blir ofrivillig projektledare",
+"Någon börjar googla under mötet",
+"Det refereras till förra årets kaos",
+"En allmän suck hörs",
+"En spontan aktivitet föreslås",
+"Någon skämtar om att vara bakis",
+"Ett internt skämt drar ut på tiden",
+"Någon nämner en förlorad klubbmedlem",
+"Det blir tyst i mer än 10 sekunder",
+"Någon glömmer vad vi pratar om",
+"Förslag om samverkan med annan klubb dyker upp",
+"Någon frågar 'har vi budget för det?'",
+"Någon missförstår agendan",
+"En regel diskuteras men ingen kan den",
+"SKÅL!",
+"Någon har glömt sitt ansvarsområde",
+"Nostalgisnack",
+"Diskussion om möte på helgdag",
+"Någon säger att detta borde vi ta i WhatsApp",
+"Dokument delas men ingen har läst",
+"Någon låtsas minnas föregående beslut",
+"Fel fil öppnas på mötet",
+"Tyst konsensus uppnås utan beslut",
+"Någon nämner LC",
+"Oklarheter vilka som åker på ett externt event",
+"Vegas nämns",
+"En post member deltar på mötet",
+"En gäst deltar på mötet",
+"Någon lägger till en övrig fråga",
+"Någon lägger till ett övrigt påstående",
+"Någon tar en ogiltig KP",
+"Klubbis missköter sig",
+"Broder kommer inte till tals",
+"Någon är osäker på om de ska delta på ett RT-event utanför klubben",
+"En broder använder en ovanligt formell röst",
+"Någon vill 'ta det vidare i styrelsen'",
+"Någon uttrycker sig kryptiskt eller förkortat",
+"En broder är tyst men skriver mycket i chatten",
+"Någon säger 'jag vet inte om det är en bra idé men...'",
+"Ett internskämt får förklaras för ny medlem",
+"Ordföranden missar att fördela ordet",
+"Någon föreslår en lokal ölprovning",
+"En broder pratar om RT i ett annat land",
+"Någon säger 'kan vi fatta beslut på detta nu?'",
+"En broder vinner en intern tävling",
+"Teknikstrul sker (t.ex. Teams eller ljudproblem)",
+"Någon är sen till mötet",
+"Någon glömmer stänga av mikrofonen",
+"En tidigare motion kommer upp igen",
+"'Det står nog i protokollet' sägs",
+"Någon lämnar mötet utan förklaring",
+"En medlem påminns om medlemsavgift",
+"En ny idé föreslås utan att någon antecknar",
+"Det blir tyst när ordförande ställer en fråga",
+"Någon visar ett meme i chatten",
+"En broder refererar till stadgarna",
+"Någon föreslår en samarbetsaktivitet med LC",
+"Någon ifrågasätter varför något inte blev gjort",
+"En tidigare styrelse nämns nostalgiskt",
+"Någon avslutar med 'vi ses i baren'",
+"Någon säger 'vi borde skriva en policy'"
+    ];
 
     function generateBoard() {
       const board = document.getElementById("bingo");
       board.innerHTML = "";
-      const shuffled = allCeller.sort(() => 0.5 - Math.random());
+      const shuffled = [...allCeller].sort(() => 0.5 - Math.random());
       const selected = shuffled.slice(0, 24);
-
       let i = 0;
+
       for (let row = 0; row < 5; row++) {
         for (let col = 0; col < 5; col++) {
           const cell = document.createElement("div");
