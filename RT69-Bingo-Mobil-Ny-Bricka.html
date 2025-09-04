@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RT69-Bingo</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #002d72;
+      color: #ffffff;
+    }
+    h1 {
+      margin-top: 30px;
+      color: #ffc72c;
+    }
+    .bingo {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      max-width: 600px;
+      margin: 20px auto;
+    }
+    .cell {
+      background: #ffffff;
+      color: #002d72;
+      border: 2px solid #ffc72c;
+      padding: 15px;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: background 0.3s;
+      font-size: 14px;
+    }
+    .cell.marked {
+      background: #ffc72c;
+      color: #002d72;
+      text-decoration: line-through;
+    }
+    .cell.free {
+      background: #e0e0e0;
+      color: #000;
+      cursor: default;
+      font-weight: bold;
+    }
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #ffc72c;
+      border: none;
+      color: #002d72;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #e6b800;
+    }
+    .rules {
+      background: #001a40;
+      color: #ffffff;
+      padding: 20px;
+      margin-top: 40px;
+    }
+    .rules h2 {
+      color: #ffc72c;
+    }
+    .rules ol {
+      text-align: left;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 600px) {
+      .cell {
+        font-size: 12px;
+        padding: 10px;
+      }
+      button {
+        width: 80%;
+        font-size: 18px;
+      }
+      .rules ol {
+        padding-left: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>📊 RT69-Bingo</h1>
+  <div class="bingo" id="bingo"></div>
+  <button onclick="checkBingo()">BINGO!</button>
+  <button onclick="generateBoard()">🔄 Ny bricka</button>
+
+  <div class="rules">
+    <h2>📜 Regler för RT69-Bingo</h2>
+    <ol>
+      <li>Markera en ruta varje gång du känner igen en situation.</li>
+      <li>Vid varje markerad ruta: 🥤 <strong>Drick av valfri dryck</strong> – med stil och ansvar.</li>
+      <li>Du får <strong>BINGO</strong> vid en hel rad: vågrätt, lodrätt eller diagonalt.</li>
+      <li>Utropa “BINGO!” med stolthet – belöning utdelas av <strong>bingomästaren</strong>.</li>
+    </ol>
+    <p><em>Spela med skratt, vänskap och värdighet!</em></p>
+  </div>
+
+  <audio id="bingo-sound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg" preload="auto"></audio>
+
+  <script>
+    const allCeller = [...Array(65).keys()].map(i => "Händelse " + (i + 1)); // Placeholder-rutor
+
+    function generateBoard() {
+      const board = document.getElementById("bingo");
+      board.innerHTML = "";
+      const shuffled = allCeller.sort(() => 0.5 - Math.random());
+      const selected = shuffled.slice(0, 24);
+
+      let i = 0;
+      for (let row = 0; row < 5; row++) {
+        for (let col = 0; col < 5; col++) {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+
+          if (row === 2 && col === 2) {
+            cell.textContent = "GRATISRUTA";
+            cell.classList.add("free", "marked");
+          } else {
+            cell.textContent = selected[i];
+            cell.onclick = () => cell.classList.toggle("marked");
+            i++;
+          }
+
+          board.appendChild(cell);
+        }
+      }
+    }
+
+    function checkBingo() {
+      const cells = document.querySelectorAll(".cell");
+      const grid = Array.from({ length: 5 }, (_, r) =>
+        Array.from({ length: 5 }, (_, c) => cells[r * 5 + c].classList.contains("marked"))
+      );
+
+      const hasBingo = () => {
+        for (let r = 0; r < 5; r++) if (grid[r].every(cell => cell)) return true;
+        for (let c = 0; c < 5; c++) if (grid.every(row => row[c])) return true;
+        if (grid.every((row, i) => row[i])) return true;
+        if (grid.every((row, i) => row[4 - i])) return true;
+        return false;
+      };
+
+      if (hasBingo()) {
+        document.getElementById("bingo-sound").play();
+        alert("🎉 BINGO! Spelet pausas. Vinnaren ska förklara sin rad och få den godkänd av bingomästaren. Priset hägrar!");
+      } else {
+        alert("❌ Tyvärr! Ingen giltig rad hittades. Fortsätt spela – du är nära!");
+      }
+    }
+
+    generateBoard();
+  </script>
+</body>
+</html>
